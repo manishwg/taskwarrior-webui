@@ -1,4 +1,6 @@
 import * as Koa from 'koa';
+import * as path from 'path';
+import * as serve from 'koa-static';
 import * as Router from '@koa/router';
 import * as bodyParser from 'koa-bodyparser';
 import * as logger from 'koa-logger';
@@ -8,9 +10,11 @@ import tasksRouter from './tasks';
 import syncRouter from './sync';
 import { TaskError } from 'taskwarrior-lib';
 
+const staticDirPath = path.join(__dirname, '..', '..', 'frontend', 'dist');
 const app = new Koa();
 
 qs(app);
+app.use(serve(staticDirPath));
 app.use(bodyParser());
 app.use(logger());
 
@@ -28,14 +32,14 @@ app.use(async (ctx, next) => {
 });
 
 const router = new Router();
-router.use('/tasks', tasksRouter.routes());
-router.use('/sync', syncRouter.routes());
+router.use('/api/tasks', tasksRouter.routes());
+router.use('/api/sync', syncRouter.routes());
 
 app.use(router.routes());
 app.use(router.allowedMethods());
 
 const prod = process.env.NODE_ENV === 'production';
 const addr = prod ? '0.0.0.0' : 'localhost';
-app.listen(3000, addr);
+app.listen(5000, addr);
 
-console.log(`Server listening on http://${addr}:3000`);
+console.log(`Server listening on http://${addr}:5000`);
